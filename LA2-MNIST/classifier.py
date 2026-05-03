@@ -27,7 +27,18 @@ class MNISTClassifier(abc.ABC):
         - Use the model's fit() method with the provided parameters.
         - Return the History object from fit().
         """
-        raise NotImplementedError
+        # Build the model if it has not been instantiated yet
+        if self.model is None:
+            self.model = self.build_model()
+            
+        # Train the model and return the training history
+        history = self.model.fit(
+            x=x_train, y=y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            validation_split=validation_split
+        )
+        return history
 
     def evaluate(self, x_test: np.ndarray, y_test: np.ndarray) -> dict:
         """Evaluate the model on the test data.
@@ -38,7 +49,29 @@ class MNISTClassifier(abc.ABC):
         - Use the model's predict() method and np.argmax to get predicted labels.
         - Return a dict with keys: "loss", "accuracy", "y_pred".
         """
-        raise NotImplementedError
+        # Check if the model exists before evaluating
+        if self.model is None:
+            raise RuntimeError("Model has not been built or loaded yet.")
+            
+        # Evaluate to get loss and accuracy
+        eval_results = self.model.evaluate(x_test, y_test, verbose=0)
+        if isinstance(eval_results, (list, tuple)):
+            loss = eval_results[0]
+            accuracy = eval_results[1]
+        else:
+            loss = eval_results
+            accuracy = 0.0 # By Default if the model has not been compile accuracy metric
+
+        # Get predictions and convert probabilities to class labels
+        predictions = self.model.predict(x_test, verbose=0)
+        y_pred = np.argmax(predictions, axis=1)
+        
+        # Return the results as a dictionary
+        return {
+            "loss": loss,
+            "accuracy": accuracy,
+            "y_pred": y_pred
+        }
 
     def save(self, path: str) -> None:
         """Save the model to the given file path.
@@ -47,7 +80,11 @@ class MNISTClassifier(abc.ABC):
         - Raise RuntimeError if self.model is None.
         - Use the model's save() method.
         """
-        raise NotImplementedError
+        # Check if there is a model to save
+        if self.model is None:
+            raise RuntimeError("No model to save.")
+        
+        self.model.save(path)
 
     def load(self, path: str) -> None:
         """Load a model from the given file path.
@@ -55,7 +92,7 @@ class MNISTClassifier(abc.ABC):
         TODO: Implement this method.
         - Use tf.keras.models.load_model() and assign to self.model.
         """
-        raise NotImplementedError
+        self.model = tf.keras.models.load_model(path)
 
 
 class LogisticRegressionClassifier(MNISTClassifier):
@@ -72,7 +109,23 @@ class LogisticRegressionClassifier(MNISTClassifier):
           and metrics=["accuracy"].
         - Return the compiled model.
         """
-        raise NotImplementedError
+        # Initialize the Sequential model (a series of consecutive layers)
+        model = tf.keras.Sequential([
+            # Input layer: accepting 784-dimensional vectors
+            tf.keras.layers.Input(shape=(784,)),
+            
+            # Output Layer: a single Dense layer with 10 units and softmax activation.
+            tf.keras.layers.Dense(10, activation="softmax")
+        ])
+        
+        # Compile the model with optimized configurations and evaluate
+        model.compile(
+            optimizer="sgd",
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
+        
+        return model
 
 
 class NeuralNetworkClassifier(MNISTClassifier):
@@ -91,4 +144,26 @@ class NeuralNetworkClassifier(MNISTClassifier):
           and metrics=["accuracy"].
         - Return the compiled model.
         """
-        raise NotImplementedError
+        # Initialize the Sequential model
+        model = tf.keras.Sequential([
+            # Input layer: accepting 784-dimensional vectors
+            tf.keras.layers.Input(shape=(784,)),
+            
+            # Hidden layer 1: 128 units and ReLU activation.
+            tf.keras.layers.Dense(128, activation="relu"),
+            
+            # Hidden layer 2: 64 units and ReLU activation.
+            tf.keras.layers.Dense(64, activation="relu"),
+            
+            # Output layer: 10 units and ReLU activation.
+            tf.keras.layers.Dense(10, activation="softmax")
+        ])
+        
+        # Compile the model with optimize 'adam'
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
+        
+        return model

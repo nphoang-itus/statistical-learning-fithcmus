@@ -47,7 +47,7 @@ mnist/
 Install the required Python packages before starting:
 
 ```bash
-pip install tensorflow numpy scikit-learn
+pip install tensorflow-macos tensorflow-metal numpy scikit-learn
 ```
 
 > **Note:** TensorFlow 2.15.x is recommended for Python 3.9. For Python 3.10+, TensorFlow 2.16+ should work.
