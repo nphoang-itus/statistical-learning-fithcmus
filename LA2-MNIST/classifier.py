@@ -31,13 +31,22 @@ class MNISTClassifier(abc.ABC):
         if self.model is None:
             self.model = self.build_model()
             
+        # Define the EarlyStopping callback
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',        # Metric to monitor (Validation Loss)
+            patience=3,                # Number of epochs with no improvement to wait before stopping
+            restore_best_weights=True  # Restore the best model weights found during training
+        )
+            
         # Train the model and return the training history
         history = self.model.fit(
-            x=x_train, y=y_train,
+            x_train, y_train,
             epochs=epochs,
             batch_size=batch_size,
-            validation_split=validation_split
+            validation_split=validation_split,
+            callbacks=[early_stopping] # Pass the callback to the fit method
         )
+        
         return history
 
     def evaluate(self, x_test: np.ndarray, y_test: np.ndarray) -> dict:
