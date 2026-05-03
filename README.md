@@ -12,7 +12,10 @@ This repository contains course assignments and exercises for the Statistical Le
 - **LA2-MNIST/**  
   Handwritten digit classification on the MNIST dataset using TensorFlow/Keras.  
   - Implements both Logistic Regression and a simple Neural Network (two hidden layers).
-  - Contains code, data, trained models, and result summaries.
+  - Contains code, trained models, and result summaries.
+  - **Note:** The MNIST data file (`data/mnist.npz`) is not included in this repository due to GitHub's file size limits. To run this lab, download the MNIST dataset file manually:
+    1. Download `mnist.npz`: read [https://stackoverflow.com](https://stackoverflow.com/questions/40690203/how-can-i-import-the-mnist-dataset-that-has-been-manually-downloaded#:~:text=1%2018%2029-,Comments,another%20location%20to%20Your%20liking.)
+    2. Place the file in the `LA2-MNIST/data/` directory.
   - Example results:  
     | Model    | Accuracy | Precision | Recall | F1-score |
     |----------|----------|-----------|--------|----------|
