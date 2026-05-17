@@ -28,6 +28,11 @@ class MNISTClassifier(abc.ABC):
         """
         if self.model is None:
           self.model = self.build_model()
+        callbacks = tf.keras.callbacks.EarlyStopping(
+          monitor="val_loss",
+          patience=3,
+          restore_best_weights=True,
+        )
         history = self.model.fit(
           x_train,
           y_train,
@@ -35,6 +40,7 @@ class MNISTClassifier(abc.ABC):
           batch_size=batch_size,
           validation_split=validation_split,
           shuffle=True,
+          callbacks=[callbacks],
           verbose=1,
         )
         return history
@@ -176,6 +182,10 @@ class CIFARMLPClassifier(MNISTClassifier):
         )
         model.compile(
           optimizer="adam",
+          # optimizer=tf.keras.optimizers.Adam(
+          #   learning_rate=1e-4,
+          #   clipnorm=1.0,
+          # ),
           loss="sparse_categorical_crossentropy",
           metrics=["accuracy"],
         )
@@ -243,11 +253,9 @@ class CIFARCNNClassifier(MNISTClassifier):
           ],
           name="cifar10_cnn",
         )
-
         model.compile(
           optimizer="adam",
           loss="sparse_categorical_crossentropy",
           metrics=["accuracy"],
         )
-
         return model

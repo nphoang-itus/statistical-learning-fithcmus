@@ -44,6 +44,13 @@ def _model_path(model_type: str) -> str:
 def _data_path(dataset: str) -> str:
     return os.path.join(DATA_DIR, f"{dataset}.npz")
 
+def _force_cpu_if_requested(args: argparse.Namespace) -> None:
+    if getattr(args, "cpu", False):
+        try:
+            tf.config.set_visible_devices([], "GPU")
+            print("Running on CPU only.")
+        except RuntimeError as exc:
+            print(f"Warning: Could not disable GPU because TensorFlow devices were already initialized: {exc}")
 
 def _configure_mnist() -> None:
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
@@ -98,6 +105,7 @@ def configure(args: argparse.Namespace) -> None:
 
 def train(args: argparse.Namespace) -> None:
     """Train the selected model and save it to disk."""
+    _force_cpu_if_requested(args)
     model_type: str = args.model
     spec = MODEL_TYPES[model_type]
     data_path = _data_path(spec["dataset"])
@@ -127,6 +135,7 @@ def train(args: argparse.Namespace) -> None:
 
 def test(args: argparse.Namespace) -> None:
     """Evaluate the selected model and write results to a Markdown file."""
+    _force_cpu_if_requested(args)
     model_type: str = args.model
     spec = MODEL_TYPES[model_type]
     data_path = _data_path(spec["dataset"])
@@ -250,12 +259,22 @@ def main() -> None:
     )
     train_parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs")
     train_parser.add_argument("--batch-size", type=int, default=128, help="Training batch size")
+    train_parser.add_argument(
+        "--cpu",
+        action="store_true",
+        help="Force TensorFlow to run on CPU only",
+    )
 
     # test
     test_parser = subparsers.add_parser("test", help="Evaluate a trained model")
     test_parser.add_argument(
         "--model", required=True, choices=MODEL_TYPES.keys(),
         help="Model type to evaluate (logistic | nn | cifar_mlp | cnn)",
+    )
+    test_parser.add_argument(
+       "--cpu",
+        action="store_true",
+        help="Force TensorFlow to run on CPU only",
     )
 
     # summary
