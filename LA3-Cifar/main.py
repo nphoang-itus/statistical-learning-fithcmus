@@ -123,12 +123,31 @@ def train(args: argparse.Namespace) -> None:
     classifier.model = classifier.build_model()
 
     print(f"Training {model_type} model on {spec['dataset']} …")
-    classifier.train(x_train, y_train, epochs=args.epochs, batch_size=args.batch_size)
+    # classifier.train(x_train, y_train, epochs=args.epochs, batch_size=args.batch_size)
+    history = classifier.train(
+        x_train,
+        y_train,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+    )
 
     os.makedirs(MODEL_DIR, exist_ok=True)
     save_path = _model_path(model_type)
     classifier.save(save_path)
     print(f"Model saved to {save_path}")
+    
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    history_path = os.path.join(RESULTS_DIR, f"{model_type}_history.json")
+
+    history_data = {
+        key: [float(v) for v in values]
+        for key, values in history.history.items()
+    }
+
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump(history_data, f, indent=2)
+
+    print(f"Training history saved to {history_path}")
 
 
 # ── test ─────────────────────────────────────────────────────────────────────
