@@ -17,6 +17,7 @@ from classifier import (
     MNISTClassifier,
     CIFARMLPClassifier,
     CIFARCNNClassifier,
+    CIFARCNNAugmentedClassifier,
 )
 
 DATA_DIR = "data"
@@ -34,6 +35,7 @@ MODEL_TYPES: Dict[str, ModelSpec] = {
     "nn": {"classifier": NeuralNetworkClassifier, "dataset": "mnist"},
     "cifar_mlp": {"classifier": CIFARMLPClassifier, "dataset": "cifar10"},
     "cnn": {"classifier": CIFARCNNClassifier, "dataset": "cifar10"},
+    "cnn_aug": {"classifier": CIFARCNNAugmentedClassifier, "dataset": "cifar10"},
 }
 
 
@@ -274,7 +276,7 @@ def main() -> None:
     train_parser = subparsers.add_parser("train", help="Train a model")
     train_parser.add_argument(
         "--model", required=True, choices=MODEL_TYPES.keys(),
-        help="Model type to train (logistic | nn | cifar_mlp | cnn)",
+        help="Model type to train (logistic | nn | cifar_mlp | cnn | cnn_aug)"
     )
     train_parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs")
     train_parser.add_argument("--batch-size", type=int, default=128, help="Training batch size")
@@ -288,7 +290,7 @@ def main() -> None:
     test_parser = subparsers.add_parser("test", help="Evaluate a trained model")
     test_parser.add_argument(
         "--model", required=True, choices=MODEL_TYPES.keys(),
-        help="Model type to evaluate (logistic | nn | cifar_mlp | cnn)",
+        help="Model type to train (logistic | nn | cifar_mlp | cnn | cnn_aug)"
     )
     test_parser.add_argument(
        "--cpu",

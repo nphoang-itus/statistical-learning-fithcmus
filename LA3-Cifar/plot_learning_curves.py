@@ -87,7 +87,7 @@ def main() -> None:
     parser.add_argument(
         "--model",
         required=True,
-        choices=["cifar_mlp", "cnn"],
+        choices=["cifar_mlp", "cnn", "cnn_aug"],
         help="Model name to plot.",
     )
 

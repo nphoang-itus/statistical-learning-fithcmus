@@ -157,7 +157,7 @@ def main() -> None:
     parser.add_argument(
         "--model",
         required=True,
-        choices=["cifar_mlp", "cnn"],
+        choices=["cifar_mlp", "cnn", "cnn_aug"],
         help="Model name.",
     )
     parser.add_argument(
@@ -168,7 +168,7 @@ def main() -> None:
     parser.add_argument(
         "--source",
         default="results",
-        choices=["results", "model"],
+        choices=["cifar_mlp", "cnn", "cnn_aug"],
         help="Use saved results Markdown or recompute predictions from the Keras model.",
     )
 

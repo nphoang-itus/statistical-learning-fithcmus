@@ -28,11 +28,21 @@ class MNISTClassifier(abc.ABC):
         """
         if self.model is None:
           self.model = self.build_model()
-        callbacks = tf.keras.callbacks.EarlyStopping(
-          monitor="val_loss",
-          patience=3,
-          restore_best_weights=True,
-        )
+        callbacks = [
+            tf.keras.callbacks.ReduceLROnPlateau(
+                monitor="val_loss",
+                factor=0.5,
+                patience=3,
+                min_lr=1e-5,
+                verbose=1,
+            ),
+            tf.keras.callbacks.EarlyStopping(
+                monitor="val_loss",
+                patience=8,
+                restore_best_weights=True,
+                verbose=1,
+            ),
+        ]
         history = self.model.fit(
           x_train,
           y_train,
@@ -40,7 +50,7 @@ class MNISTClassifier(abc.ABC):
           batch_size=batch_size,
           validation_split=validation_split,
           shuffle=True,
-          callbacks=[callbacks],
+          callbacks=callbacks,
           verbose=1,
         )
         return history
@@ -259,3 +269,62 @@ class CIFARCNNClassifier(MNISTClassifier):
           metrics=["accuracy"],
         )
         return model
+
+class CIFARCNNAugmentedClassifier(MNISTClassifier):
+    """CNN for CIFAR-10 with built-in data augmentation."""
+
+    def build_model(self) -> tf.keras.Model:
+        data_augmentation = tf.keras.Sequential(
+          [
+            tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomTranslation(
+              height_factor=0.05,
+              width_factor=0.05,
+              fill_mode="reflect",
+            ),
+            tf.keras.layers.RandomRotation(0.03),
+          ],
+          name="data_augmentation",
+        )
+        model = tf.keras.Sequential(
+          [
+            tf.keras.layers.Input(shape=(32, 32, 3)),
+            data_augmentation,
+            # Block 1
+            tf.keras.layers.Conv2D(32, kernel_size=3, padding="same", activation="relu",),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Conv2D(32, kernel_size=3, padding="same", activation="relu",),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D(pool_size=2),
+            tf.keras.layers.Dropout(0.2),
+            # Block 2
+            tf.keras.layers.Conv2D(64, kernel_size=3, padding="same", activation="relu",),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Conv2D(64, kernel_size=3, padding="same", activation="relu",),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D(pool_size=2),
+            tf.keras.layers.Dropout(0.3),
+            # Block 3
+            tf.keras.layers.Conv2D(128, kernel_size=3, padding="same", activation="relu",),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Conv2D(128, kernel_size=3, padding="same", activation="relu",),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D(pool_size=2),
+            tf.keras.layers.Dropout(0.4),
+            # Head
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(256, activation="relu"),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Dropout(0.5),
+            tf.keras.layers.Dense(10, activation="softmax"),
+          ],
+          name="cifar10_cnn_aug",
+        )
+        model.compile(
+          optimizer="adam",
+          loss="sparse_categorical_crossentropy",
+          metrics=["accuracy"],
+        )
+
+        return model
+
