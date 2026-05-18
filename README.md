@@ -22,5 +22,17 @@ This repository contains course assignments and exercises for the Statistical Le
     | Logistic | 0.9127   | 0.9126    | 0.9127 | 0.9124   |
     | NN       | 0.9773   | 0.9775    | 0.9773 | 0.9773   |
 
+- **LA3-Cifar/**  
+  Convolutional Neural Networks for CIFAR-10 image classification.  
+  - Implements baseline MLP, CNN, and CNN with data augmentation.
+  - Includes learning curves, confusion matrices, and class-wise error analysis.
+  - Models trained on 32x32 RGB images across 10 object classes.
+  - Example results:  
+    | Model      | Accuracy | Precision | Recall | F1-score | Parameters |
+    |------------|----------|-----------|--------|----------|-----------|
+    | MLP        | 0.5086   | 0.5171    | 0.5086 | 0.5024   | 1,707,274 |
+    | CNN        | 0.8407   | 0.8397    | 0.8407 | 0.8393   | 816,938   |
+    | CNN + Aug  | 0.8481   | 0.8499    | 0.8481 | 0.8462   | 816,938   |
+
 - **SP1-LinearRegression/**  
   Linear regression assignment, including a Jupyter notebook for data analysis and model training.
