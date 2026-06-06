@@ -30,7 +30,7 @@ KEYWORD_GROUPS = {
     "sql": ["select ", "from ", "where ", "insert into", "update ", "delete from", "create table", "join "],
     "shell": ["#!/bin/bash", "#!/bin/sh", "echo ", "export ", "fi", "then", "grep ", "awk ", "sed "],
     "dockerfile": ["from ", "run ", "copy ", "add ", "cmd ", "entrypoint ", "workdir ", "expose "],
-    "makefile": ["$(CC)", "$(CXX)", ".PHONY", "all:", "clean:", "$@", "$<", "\t"],
+    "makefile": ["$(CC)", "$(CXX)", ".PHONY", "all:", "clean:", "install:", "$@", "$<", "$(MAKE)", "Makefile"],
     "latex": ["\\documentclass", "\\begin{document}", "\\section", "\\usepackage", "\\end{document}", "\\cite", "\\ref"],
 }
 
@@ -171,7 +171,18 @@ def extract_features_from_text(text: str) -> Dict[str, float]:
 
     makefile_target_lines = sum(
         1 for line in non_empty_lines
-        if re.match(r"^[A-Za-z0-9_\-./]+:\s*", line)
+        if re.match(r"^[A-Za-z0-9_\-./]+:\s*($|[^/])", line)
+        and not re.match(r"^\s*[\w\-.\"']+\s*:\s+.+", line)
+    )
+
+    makefile_command_lines = sum(
+        1 for line in lines
+        if line.startswith("\t") and len(line.strip()) > 0
+    )
+
+    makefile_variable_lines = sum(
+        1 for line in non_empty_lines
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*\s*[:?+]?=", line)
     )
 
     features = {
@@ -212,6 +223,8 @@ def extract_features_from_text(text: str) -> Dict[str, float]:
         "equal_key_value_ratio": safe_div(equal_key_value_lines, num_non_empty_lines),
         "csv_like_line_ratio": safe_div(csv_like_lines, min(num_non_empty_lines, 30)),
         "makefile_target_ratio": safe_div(makefile_target_lines, num_non_empty_lines),
+        "makefile_command_ratio": safe_div(makefile_command_lines, num_non_empty_lines),
+        "makefile_variable_ratio": safe_div(makefile_variable_lines, num_non_empty_lines),
 
         # Strong signatures
         "has_doctype": int("<!doctype" in lower),
@@ -238,6 +251,41 @@ def extract_features_from_text(text: str) -> Dict[str, float]:
         "has_public_word": int("public " in lower),
         "has_include": int("#include" in lower),
         "has_namespace": int("namespace " in lower),
+        
+        # Markdown
+        "markdown_heading_ratio": safe_div(
+            sum(1 for line in non_empty_lines if re.match(r"^\s{0,3}#{1,6}\s+", line)),
+            num_non_empty_lines
+        ),
+        "markdown_list_ratio": safe_div(
+            sum(1 for line in non_empty_lines if re.match(r"^\s*[-*+]\s+", line)),
+            num_non_empty_lines
+        ),
+        "markdown_code_fence_count": lower.count("```"),
+        "markdown_link_count": count_regex(r"\[[^\]]+\]\([^)]+\)", text),
+        
+        # SQL
+        "sql_statement_ratio": safe_div(
+            sum(
+                1 for line in non_empty_lines
+                if re.match(r"^\s*(select|insert|update|delete|create|alter|drop|with)\b", line.lower())
+            ),
+            num_non_empty_lines
+        ),
+        "sql_clause_count": count_regex(
+            r"\b(select|from|where|join|group by|order by|insert into|create table|primary key|foreign key)\b",
+            lower,
+        ),
+        
+        # JavaScript/TypeScript
+        "js_arrow_count": lower.count("=>"),
+        "js_console_count": lower.count("console."),
+        "js_require_count": lower.count("require("),
+        "js_export_count": lower.count("export "),
+        "js_import_from_count": count_regex(r"import\s+.+\s+from\s+['\"]", lower),
+        "ts_type_annotation_count": count_regex(r":\s*(string|number|boolean|any|unknown|void)\b", lower),
+        "ts_interface_count": count_regex(r"\binterface\s+\w+", lower),
+        "ts_type_alias_count": count_regex(r"\btype\s+\w+\s*=", lower),
     }
 
     # Keyword group counts/ratios
