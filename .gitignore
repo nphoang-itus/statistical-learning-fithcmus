@@ -225,12 +225,9 @@ mnist.npz
 data/
 
 # Models
-models/*.pkl
-models/*.joblib
-models/*.txt
+models/
 
 # Reports generated
 reports/figures/*.png
 reports/figures/*.jpg
 reports/figures/*.pdf
-
