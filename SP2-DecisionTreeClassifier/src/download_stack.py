@@ -51,6 +51,11 @@ LANGUAGE_DATA_DIR_CANDIDATES = {
     "Perl": ["data/perl"],
     "Scala": ["data/scala"],
     "LaTeX": ["data/latex", "data/tex"],
+    "Haskell": ["data/haskell"],
+    "Dart": ["data/dart"],
+    "Groovy": ["data/groovy"],
+    "Vue": ["data/vue"],
+    "Julia": ["data/julia"],
 }
 
 
@@ -87,6 +92,11 @@ FILE_EXTENSIONS = {
     "Perl": ".pl",
     "Scala": ".scala",
     "LaTeX": ".tex",
+    "Haskell": ".hs",
+    "Dart": ".dart",
+    "Groovy": ".groovy",
+    "Vue": ".vue",
+    "Julia": ".jl",
 }
 
 
