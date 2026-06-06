@@ -223,3 +223,14 @@ __marimo__/
 mnist.npz
 
 data/
+
+# Models
+models/*.pkl
+models/*.joblib
+models/*.txt
+
+# Reports generated
+reports/figures/*.png
+reports/figures/*.jpg
+reports/figures/*.pdf
+
