@@ -16,6 +16,11 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 
 ID_COLUMNS = ["file_id", "label", "cleaned_path"]
 
+def parse_max_depth(value: str):
+    if value.lower() in ["none", "null"]:
+        return None
+    return int(value)
+
 
 def load_features(features_path: Path):
     df = pd.read_csv(features_path)
@@ -202,8 +207,8 @@ def main():
     parser.add_argument("--tree-plot-path", default="reports/figures/decision_tree_top3.png")
     parser.add_argument("--feature-importance-path", default="reports/feature_importance.csv")
 
-    parser.add_argument("--max-depth", type=int, default=18)
-    parser.add_argument("--min-samples-leaf", type=int, default=5)
+    parser.add_argument("--max-depth", type=parse_max_depth, default=None)
+    parser.add_argument("--min-samples-leaf", type=int, default=1)
     parser.add_argument("--random-state", type=int, default=42)
 
     args = parser.parse_args()
